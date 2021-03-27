@@ -6,6 +6,8 @@ import Icon from 'react-native-vector-icons/EvilIcons';
 import firebase from "firebase"
 import "firebase/firestore"
 import "firebase/auth"
+// import RNSmtpMailer from "react-native-smtp-mailer";
+
 const StudentScreen = ({ navigation, route }) => {
     const { userID,
         email } = route.params;
@@ -24,6 +26,23 @@ const StudentScreen = ({ navigation, route }) => {
     const hideDialog = () => setVisible(false);
     const copyToClipboard = () => {
         Clipboard.setString(userID)
+    }
+    const sendNotifications = () => {
+        // RNSmtpMailer.sendMail({
+        //     mailhost: "smtp.gmail.com",
+        //     port: "465",
+        //     ssl: true, // optional. if false, then TLS is enabled. Its true by default in android. In iOS TLS/SSL is determined automatically, and this field doesn't affect anything
+        //     username: " ",
+        //     password: "password",
+        //     fromName: "Some Name", // optional
+        //     replyTo: "usernameEmail", // optional
+        //     recipients: "pradeepmsblogspot@gmail.com",
+        //     bcc: ["bccEmail1", "bccEmail2"], // optional
+        //     subject: "subject",
+        //     htmlBody: "<h1>header</h1><p>body</p>",
+        // })
+        //     .then(success => console.log(success))
+        //     .catch(err => console.log(err));
     }
 
     useEffect(() => {
@@ -101,6 +120,8 @@ const StudentScreen = ({ navigation, route }) => {
                         <Subheading>Last Health Checkup - {lastCheckupDate}</Subheading>
                         <Subheading>Last Checked temp - {lastCheckedTemperature} F</Subheading>
                         <Subheading>Signs of Fever and Cold - {signsOfFeverOrCold}</Subheading>
+                        <Button onPress={() => sendNotifications()}>Change Signs to Yes</Button>
+                        <Button>Apply Leave</Button>
                     </Card.Content>
                 </Card>
             </View>
@@ -137,7 +158,7 @@ const styles = StyleSheet.create({
         padding: 10,
         color: "#fff"
     }, studentContent: {
-        marginTop: StatusBar.currentHeight + 10
+        marginTop: StatusBar.currentHeight + 30
     }, welcomeCard: {
         backgroundColor: "dodgerblue",
         marginBottom: 10,

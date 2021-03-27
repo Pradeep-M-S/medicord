@@ -6,11 +6,14 @@ import firebase from "firebase";
 import 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import "firebase/auth"
+import { HelperText } from 'react-native-paper';
+
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const LoginScreen = ({ navigation }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-
+    const [showPassword, setShowPassword] = useState(false);
     let userType;
     let childName;
 
@@ -40,7 +43,9 @@ const LoginScreen = ({ navigation }) => {
                         studentEmail: studentEmailID,
                     })
                 } else if (userType === "warden") {
-                    navigation.navigate("WardenScreen")
+                    navigation.navigate("WardenScreen", {
+                        email: email
+                    })
                 }
             }).then(() => {
                 setEmail("");
@@ -76,6 +81,35 @@ const LoginScreen = ({ navigation }) => {
                 iconType="lock"
                 secureTextEntry={true}
             />
+            {
+                showPassword &&
+                <View style={{ alignSelf: "flex-start", marginLeft: 48 }}>
+                    <HelperText style={{ fontSize: 15 }} type="info" visible={showPassword}>
+                        {password}
+                    </HelperText>
+                </View>
+            }
+            <View style={{ marginLeft: 5, alignSelf: "flex-start" }}>
+                <TouchableOpacity
+                    onPress={() => {
+                        password && setShowPassword(!showPassword)
+                    }}
+                    style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+
+                    {
+                        showPassword ?
+                            <>
+                                <Icon style={{ paddingRight: 5 }} name="eye-slash" size={20} />
+                                <Text>Hide Password</Text>
+                            </>
+                            :
+                            <>
+                                <Icon style={{ paddingRight: 5 }} name="eye" size={20} />
+                                <Text>Show Password</Text>
+                            </>
+                    }
+                </TouchableOpacity>
+            </View>
 
             <FormButton buttonTitle="Sign in"
                 onPress={() => {

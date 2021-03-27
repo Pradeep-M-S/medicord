@@ -13,6 +13,7 @@ const SignupScreen = ({ navigation }) => {
     const [userType, setUserType] = useState("")
     const [studentEmailID, setStudentEmailID] = useState("")
     const [parentEmailID, setParentEmailID] = useState("")
+    const [phonenNum, setPhoneNum] = useState()
     const signUpUser = () => {
         if (name === "" || email === "" || password === "" || confirmPassword === "") {
             alert("Please Enter all the Required Fields");
@@ -29,7 +30,8 @@ const SignupScreen = ({ navigation }) => {
                             type: userType,
                             userName: name,
                             studentEmailID: studentEmailID,
-                            parentEmailID: parentEmailID
+                            parentEmailID: parentEmailID,
+                            parentPhoneNum: parentPhoneNum
                         })
                     }).then(() => {
                         alert("You have signed up successfully")
@@ -85,12 +87,20 @@ const SignupScreen = ({ navigation }) => {
                 />
             }
             {userType === "student" &&
-                <FormInput
-                    labelValue={parentEmailID}
-                    onChangeText={(parentEmail) => setParentEmailID(parentEmail)}
-                    placeholderText="Enter Parents's Email ID"
-                    iconType="google"
-                />
+                <>
+                    <FormInput
+                        labelValue={parentEmailID}
+                        onChangeText={(parentEmail) => setParentEmailID(parentEmail)}
+                        placeholderText="Enter Parents's Email ID"
+                        iconType="google"
+                    />
+                    <FormInput
+                        labelValue={phonenNum}
+                        onChangeText={(num) => setPhoneNum(num)}
+                        placeholderText="Enter Parents's Phone Number"
+                        iconType="contacts"
+                    />
+                </>
             }
             <View style={styles.radioButtonsContainer}>
                 <View style={styles.radioButtonAndLabelContainer}>
