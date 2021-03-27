@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { View, Text, Button, StyleSheet, Image, TouchableOpacity } from "react-native"
+import { View, Text, Button, StyleSheet, Image, TouchableOpacity, StatusBar } from "react-native"
 import FormButton from "../components/FormButton"
 import FormInput from "../components/FormInput"
 import firebase from "firebase";
@@ -13,30 +13,31 @@ const LoginScreen = ({ navigation }) => {
 
     let userType;
     let childName;
-    let lastHealthCheckup;
-    let lastCheckedTemperature;
-    let signsOfFeverOrCold;
+
+    let userName;
+    let studentEmailID;
     console.log(navigation)
 
     const loginUser = () => {
         firebase.auth().signInWithEmailAndPassword(email, password).then((cred) => {
-            firebase.firestore().collection('users').doc(cred.user.uid).get().then(doc => {
+            firebase.firestore().collection('users').doc(email).get().then(doc => {
                 console.log(doc.data().type)
                 userType = doc.data().type;
+                userName = doc.data().userName;
                 childName = doc.data().studentName;
-                lastHealthCheckup = doc.data().lastHealthCheckup;
-                lastCheckedTemperature = doc.data().lastCheckedTemperature;
-                signsOfFeverOrCold = doc.data().signsOfFeverOrCold;
+                studentEmailID = doc.data().studentEmailID;
+                userName = doc.data().userName;
                 if (userType === "student") {
-                    navigation.navigate("StudentScreen")
+                    navigation.navigate("StudentScreen", {
+                        userID: cred.user.uid,
+                        email: email
+                    })
                 } else if (userType === "parent") {
                     navigation.navigate("ParentScreen", {
                         email: email,
+                        userName: userName,
                         userID: cred.user.uid,
-                        childName: childName,
-                        lastHealthCheckup: lastHealthCheckup,
-                        lastCheckedTemperature: lastCheckedTemperature,
-                        signsOfFeverOrCold: signsOfFeverOrCold
+                        studentEmail: studentEmailID,
                     })
                 } else if (userType === "warden") {
                     navigation.navigate("WardenScreen")
@@ -47,6 +48,8 @@ const LoginScreen = ({ navigation }) => {
             })
 
             console.log(cred.user.uid);
+        }).catch(err => {
+            alert("Please verify your credentials");
         })
     }
 
@@ -110,7 +113,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
-        paddingTop: 50
+        paddingTop: 50,
+        marginTop: StatusBar.currentHeight,
     },
     logo: {
         height: 150,

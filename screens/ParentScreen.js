@@ -1,82 +1,52 @@
 import React, { useContext, useRef, useEffect, useState } from "react"
 import { View, StyleSheet, Text, StatusBar, ScrollView } from "react-native"
 import firebase from "firebase";
-import { Appbar, Title, Portal, Dialog, Paragraph, Button, Card, Divider, DataTable, Subheading } from 'react-native-paper';
+import { Appbar, Title, Portal, Dialog, Paragraph, Button, Card, Divider, DataTable, Subheading, ActivityIndicator, Colors } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/EvilIcons';
 import AnimatedCircularProgress from 'react-native-animated-circular-progress';
-import Constants from 'expo-constants';
-import * as Notifications from 'expo-notifications';
 import 'firebase/firestore';
 import "firebase/auth"
-import * as Permissions from "expo-permissions"
 
-Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: false,
-        shouldSetBadge: false,
-    }),
-});
 
 const ParentScreen = ({ navigation, route }) => {
     const
         { userID,
             email,
-            childName,
-            lastHealthCheckup,
-            signsOfFeverOrCold,
-            lastCheckedTemperature } = route.params;
+            userName,
+            studentEmail } = route.params;
     const [visible, setVisible] = useState(false);
-    console.log(route.params)
+    const [childsName, setChildsName] = useState()
+    const [height, setHeight] = useState()
+    const [weight, setWeight] = useState()
+    const [lastCheckedTemperature, setLastCheckedTemperature] = useState()
+    const [lastCheckupDate, setLastCheckupDate] = useState()
+    const [signsOfFeverOrCold, setSignsOfFeverOrCold] = useState()
+    const [BMI, setBMI] = useState()
+    const [BP, setBP] = useState()
+    const [loading, setLoading] = useState(true);
     const showDialog = () => setVisible(true);
 
     const hideDialog = () => setVisible(false);
-    const [expoPushToken, setExpoPushToken] = useState('');
-    const [notification, setNotification] = useState(false);
-    const notificationListener = useRef();
-    const responseListener = useRef();
+
 
     useEffect(() => {
-        registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
-
-        // This listener is fired whenever a notification is received while the app is foregrounded
-        notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-            setNotification(notification);
-        });
-
-        // This listener is fired whenever a user taps on or interacts with a notification (works when app is foregrounded, backgrounded, or killed)
-        responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-            console.log(response);
-        });
-
-        return () => {
-            Notifications.removeNotificationSubscription(notificationListener.current);
-            Notifications.removeNotificationSubscription(responseListener.current);
-        };
-
-    }, []);
-    firebase.firestore()
-        .collection("users")
-        .doc(userID)
-        .update({
-            "pushToken": expoPushToken
+        firebase.firestore().collection('users').doc(studentEmail).get().then((doc) => {
+            setHeight(doc.data().height);
+            setChildsName(doc.data().userName)
+            setWeight(doc.data().weight);
+            setLastCheckedTemperature(doc.data().lastCheckedTemperature);
+            setLastCheckupDate(doc.data().lastCheckupDate);
+            setSignsOfFeverOrCold(doc.data().signsOfFeverOrCold);
+            setBMI(doc.data().bmi);
+            setBP(doc.data().bloodPressure);
+        }).then(() => {
+            setLoading(false);
         })
-        .then(() => {
-            alert("expo push token addded")
-        })
+    }, [])
+
     return (
         <View style={styles.container} >
             <Appbar dark style={styles.top}>
-                {/* <Appbar.Action
-                    icon="archive"
-                    onPress={() => console.log('Pressed archive')}
-                />
-                <Appbar.Action icon="mail" onPress={() => console.log('Pressed mail')} />
-                <Appbar.Action icon="label" onPress={() => console.log('Pressed label')} />
-                <Appbar.Action
-                    icon="delete"
-                    onPress={() => console.log('Pressed delete')}
-                /> */}
                 <Title style={styles.appBarTitle}>
                     Parent Dashboard
                 </Title>
@@ -101,60 +71,75 @@ const ParentScreen = ({ navigation, route }) => {
                     </Dialog.Actions>
                 </Dialog>
             </Portal>
-            <Card style={styles.cardContainer} elevation={8}>
-                <Card.Content>
-                    <Title>{childName}'s Medical Data</Title>
-                </Card.Content>
-            </Card>
-            <ScrollView style={styles.scrollView}>
-                {/* <Title style={{ marginTop: StatusBar.currentHeight + 10 }}>Child's Name : {childName && childName}</Title>
-            <Title>Last Health Checkup Date : {lastHealthCheckup && lastHealthCheckup}</Title> */}
-                <Card style={styles.medicalData}>
-                    <Card.Cover source={{ uri: 'https://image.freepik.com/free-photo/overhead-view-healthcare-accessories-near-clipboard-with-plank-paper-spectacles-background_23-2148213997.jpg' }} />
-                    <Divider />
-                    <Card.Content>
-                        <Title>{childName}</Title>
-                        <Divider />
-                        <Subheading>Last Checkup Date : {lastHealthCheckup}</Subheading>
-                        <Subheading>Last Checked Temperature : {lastCheckedTemperature} F</Subheading>
-                        <Subheading>Signs of Fever/Cold : {signsOfFeverOrCold}</Subheading>
-                        <Divider />
-                        <Title>Overall Health Condition</Title>
-                        <View style={
-                            { padding: 5, marginTop: 10, justifyContent: "space-around", alignItems: "center", flexDirection: "row" }
-                        }>
-                            <AnimatedCircularProgress
-                                startDeg={45}
-                                radius={50}
-                                endDeg={358}
-                                innerRadius={0}
-                                duration={300}
-                                color="#9ede73"
-                                style={{ justifyContent: "flex-end" }}
-                            />
-                            <Title>Good</Title>
-                        </View>
-                    </Card.Content>
-                    <DataTable>
-                        <DataTable.Header>
-                            <DataTable.Title>Checkups</DataTable.Title>
-                            <DataTable.Title>Date</DataTable.Title>
-                        </DataTable.Header>
+            {
+                loading ?
+                    <View style={{ flex: 1 }}>
+                        <ActivityIndicator size="large" style={{ flex: 1, alignItems: "center", justifyContent: 'center' }} animating={true} color={Colors.blue800} />
+                    </View>
+                    :
+                    <>
+                        <Card style={styles.cardContainer} elevation={8}>
+                            <Card.Content>
+                                {/* <Title>{childName}'s Medical Data</Title> */}
+                                <Title style={styles.whiteText}>Welcome Mr/Mrs.{userName}</Title>
+                            </Card.Content>
+                        </Card>
+                        <ScrollView style={styles.scrollView}>
+                            <Title style={{ marginTop: StatusBar.currentHeight + 10 }}>Child's Name : {childsName && childsName}</Title>
+                            <Title>Last Health Checkup Date : {lastCheckupDate && lastCheckupDate}</Title>
+                            <Card style={styles.medicalData}>
+                                <Card.Cover source={{ uri: 'https://image.freepik.com/free-photo/overhead-view-healthcare-accessories-near-clipboard-with-plank-paper-spectacles-background_23-2148213997.jpg' }} />
+                                <Divider />
+                                <Card.Content>
 
-                        <DataTable.Row>
-                            <DataTable.Cell>Eye Checkup</DataTable.Cell>
-                            <DataTable.Cell>{lastHealthCheckup}</DataTable.Cell>
-                        </DataTable.Row>
+                                    <Title>{childsName}</Title>
+                                    <Divider />
+                                    <Title>Overall Health Condition</Title>
+                                    <View style={
+                                        { padding: 5, marginTop: 10, justifyContent: "space-around", alignItems: "center", flexDirection: "row" }
+                                    }>
 
-                        <DataTable.Row>
-                            <DataTable.Cell>Fever/Cold</DataTable.Cell>
-                            <DataTable.Cell>{lastHealthCheckup}</DataTable.Cell>
-                        </DataTable.Row>
+                                        <AnimatedCircularProgress
+                                            startDeg={45}
+                                            radius={50}
+                                            endDeg={358}
+                                            innerRadius={0}
+                                            duration={300}
+                                            color="#9ede73"
+                                            style={{ justifyContent: "flex-end" }}
+                                        />
+                                        <Title>Good</Title>
+                                    </View>
+                                    <Subheading>Height: {height}</Subheading>
+                                    <Subheading>Weight: {weight}</Subheading>
+                                    <Subheading>BMI: {BMI}</Subheading>
+                                    <Subheading>Blood Pressure: {BP}</Subheading>
+                                    <Subheading>Any Signs Of Fever and Cold: {signsOfFeverOrCold}</Subheading>
+                                    <Subheading>Last Checked Temperature : {lastCheckedTemperature} F</Subheading>
+                                    <Divider />
 
-                    </DataTable>
-                    <Button onPress={() => sendPushNotification(expoPushToken)}>Details</Button>
-                </Card>
-            </ScrollView>
+                                </Card.Content>
+                                <DataTable>
+                                    <DataTable.Header>
+                                        <DataTable.Title>Checkups</DataTable.Title>
+                                        <DataTable.Title>Date</DataTable.Title>
+                                    </DataTable.Header>
+
+                                    <DataTable.Row>
+                                        <DataTable.Cell>Eye Checkup</DataTable.Cell>
+                                        <DataTable.Cell>{lastCheckupDate}</DataTable.Cell>
+                                    </DataTable.Row>
+
+                                    <DataTable.Row>
+                                        <DataTable.Cell>Fever/Cold</DataTable.Cell>
+                                        <DataTable.Cell>{lastCheckupDate}</DataTable.Cell>
+                                    </DataTable.Row>
+
+                                </DataTable>
+                            </Card>
+                        </ScrollView>
+                    </>
+            }
         </View >
     )
 }
@@ -191,6 +176,7 @@ const styles = StyleSheet.create({
         marginTop: StatusBar.currentHeight + 15,
         backgroundColor: "#f3f4ed",
         borderRadius: 5,
+        backgroundColor: "dodgerblue",
         shadowColor: "#000",
         shadowOffset: {
             width: 20,
@@ -201,7 +187,9 @@ const styles = StyleSheet.create({
         elevation: 5
     }, scrollView: {
         marginHorizontal: -15,
-    },
+    }, whiteText: {
+        color: "#fff"
+    }
 })
 
 
@@ -222,54 +210,3 @@ const styles = StyleSheet.create({
 //         console.log("userType,studentName,lastHealthCheckup", userType, studentName, lastHealthCheckup)
 //     })
 // }, [userID])
-
-async function sendPushNotification(expoPushToken) {
-    const message = {
-        to: expoPushToken,
-        sound: 'default',
-        title: 'Original Title',
-        body: 'And here is the body!',
-        data: { someData: 'goes here' },
-    };
-
-    await fetch('https://exp.host/--/api/v2/push/send', {
-        method: 'POST',
-        headers: {
-            Accept: 'application/json',
-            'Accept-encoding': 'gzip, deflate',
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(message),
-    });
-}
-
-async function registerForPushNotificationsAsync() {
-    let token;
-    if (Constants.isDevice) {
-        const { status: existingStatus } = await Notifications.getPermissionsAsync();
-        let finalStatus = existingStatus;
-        if (existingStatus !== 'granted') {
-            const { status } = await Notifications.requestPermissionsAsync();
-            finalStatus = status;
-        }
-        if (finalStatus !== 'granted') {
-            alert('Failed to get push token for push notification!');
-            return;
-        }
-        token = (await Notifications.getExpoPushTokenAsync()).data;
-        console.log(token);
-    } else {
-        alert('Must use physical device for Push Notifications');
-    }
-
-    if (Platform.OS === 'android') {
-        Notifications.setNotificationChannelAsync('default', {
-            name: 'default',
-            importance: Notifications.AndroidImportance.MAX,
-            vibrationPattern: [0, 250, 250, 250],
-            lightColor: '#FF231F7C',
-        });
-    }
-
-    return token;
-}

@@ -51,9 +51,20 @@ function AuthStack() {
     }
     return (
         <Stack.Navigator initialRouteName={routeName}>
-            <Stack.Screen name="StudentScreen" component={StudentScreen} options={{ header: () => null }}
-            /><Stack.Screen name="ParentScreen" component={ParentScreen} options={{ header: () => null }}
-            /><Stack.Screen name="WardenScreen" component={WardenScreen} options={{ header: () => null }}
+            <Stack.Screen
+                name="StudentScreen"
+                component={StudentScreen}
+                options={{ header: () => null }}
+            />
+            <Stack.Screen
+                name="ParentScreen"
+                component={ParentScreen}
+                options={{ header: () => null }}
+            />
+            <Stack.Screen
+                name="WardenScreen"
+                component={WardenScreen}
+                options={{ header: () => null }}
             />
             <Stack.Screen
                 name="Onboarding"
@@ -70,7 +81,6 @@ function AuthStack() {
                 component={SignupScreen}
                 options={{ header: () => null }}
             />
-
         </Stack.Navigator>
     )
 }

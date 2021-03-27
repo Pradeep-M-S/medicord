@@ -6,28 +6,53 @@ import { RadioButton } from 'react-native-paper';
 import * as firebase from "firebase"
 
 const SignupScreen = ({ navigation }) => {
-    const [email, setEmail] = useState();
-    const [password, setPassword] = useState();
-    const [confirmPassword, setConfirmPassword] = useState();
+    const [name, setName] = useState("")
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [userType, setUserType] = useState("")
+    const [studentEmailID, setStudentEmailID] = useState("")
+    const [parentEmailID, setParentEmailID] = useState("")
     const signUpUser = () => {
-        if (password === confirmPassword) {
-            firebase.auth().createUserWithEmailAndPassword(email, password).then(cred => {
-                return firebase.firestore().collection('users').doc(cred.user.uid).set({
-                    type: userType
-                })
-            }).then(() => {
-                alert("You have signed up successfully")
-                navigation.navigate("Login")
-            })
+        if (name === "" || email === "" || password === "" || confirmPassword === "") {
+            alert("Please Enter all the Required Fields");
         } else {
-            alert("Password's doesn't match")
+            if (userType === "parent" && studentEmailID === "") {
+                alert("Please Enter the Student's Email ID");
+            } else if (userType === "student" && parentEmailID === "") {
+                alert("Please Enter the Parent's Email ID")
+            }
+            else {
+                if (password === confirmPassword) {
+                    firebase.auth().createUserWithEmailAndPassword(email, password).then(cred => {
+                        return firebase.firestore().collection('users').doc(email).set({
+                            type: userType,
+                            userName: name,
+                            studentEmailID: studentEmailID,
+                            parentEmailID: parentEmailID
+                        })
+                    }).then(() => {
+                        alert("You have signed up successfully")
+                        navigation.navigate("Login")
+                    }).catch(err => {
+                        alert("Email ID already in Use");
+                    })
+                } else {
+                    alert("Password's doesn't match")
+                }
+            }
         }
     }
+
     return (
         <View style={styles.container}>
             <Text style={styles.text}>Create an account</Text>
 
+            <FormInput
+                labelValue={name}
+                onChangeText={(userName) => setName(userName)}
+                placeholderText="Name"
+                iconType="smileo" />
             <FormInput
                 labelValue={email}
                 onChangeText={(userEmail) => setEmail(userEmail)}
@@ -37,7 +62,6 @@ const SignupScreen = ({ navigation }) => {
                 autoCapitalize="none"
                 autoCorrect={false}
             />
-
             <FormInput
                 labelValue={password}
                 onChangeText={(userPassword) => setPassword(userPassword)}
@@ -45,7 +69,6 @@ const SignupScreen = ({ navigation }) => {
                 iconType="lock"
                 secureTextEntry={true}
             />
-
             <FormInput
                 labelValue={confirmPassword}
                 onChangeText={(userPassword) => setConfirmPassword(userPassword)}
@@ -53,6 +76,22 @@ const SignupScreen = ({ navigation }) => {
                 iconType="lock"
                 secureTextEntry={true}
             />
+            {userType === "parent" &&
+                <FormInput
+                    labelValue={studentEmailID}
+                    onChangeText={(studentEmail) => setStudentEmailID(studentEmail)}
+                    placeholderText="Enter Student's Email ID"
+                    iconType="google"
+                />
+            }
+            {userType === "student" &&
+                <FormInput
+                    labelValue={parentEmailID}
+                    onChangeText={(parentEmail) => setParentEmailID(parentEmail)}
+                    placeholderText="Enter Parents's Email ID"
+                    iconType="google"
+                />
+            }
             <View style={styles.radioButtonsContainer}>
                 <View style={styles.radioButtonAndLabelContainer}>
 
@@ -130,7 +169,7 @@ const SignupScreen = ({ navigation }) => {
                 onPress={() => navigation.navigate('Login')}>
                 <Text style={styles.navButtonText}>Have an account? Sign In</Text>
             </TouchableOpacity>
-        </View>
+        </View >
     );
 };
 
